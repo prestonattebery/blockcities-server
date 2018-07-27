@@ -7,9 +7,12 @@ import (
 	"github.com/gorilla/mux"
 
 	. "github.com/devinroche/blockcities-server/config"
+	. "github.com/devinroche/blockcities-server/controllers"
+	. "github.com/devinroche/blockcities-server/dao"
 )
 
 var config = Config{}
+var dao = BlockCitiesDAO{}
 
 func init() {
 	config.Read()

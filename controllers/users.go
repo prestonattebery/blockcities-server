@@ -1,8 +1,7 @@
-package main
+package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"gopkg.in/mgo.v2/bson"
@@ -50,9 +49,31 @@ func NewUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "no bueno")
+	defer r.Body.Close()
+	var user User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		RespondWithErr(w, http.StatusBadRequest, "Invalid Request Payload")
+		return
+	}
+
+	if err := dao.Update(user); err != nil {
+		RespondWithErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	RespondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "no bueno")
+	defer r.Body.Close()
+	var user User
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		RespondWithErr(w, http.StatusBadRequest, "Invalid Request Payload")
+		return
+	}
+
+	if err := dao.Delete(user); err != nil {
+		RespondWithErr(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	RespondWithJSON(w, http.StatusOK, map[string]string{"result": "success"})
 }

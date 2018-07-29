@@ -2,33 +2,32 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/devinroche/blockcities-server/db"
+	"github.com/devinroche/blockcities-server/models"
 	"github.com/gorilla/mux"
-	. "github.com/devinroche/blockcities-server/models"
 )
 
-// get all users
+// GetUsers gets all users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	var users []User
-	db.Find(&users)
+	var users []models.User
+	db.DB.Find(&users)
 	json.NewEncoder(w).Encode(&users)
 }
 
-// get a user by id
+// GetUser gets a user by id
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	var user User
-	db.First(&user, params["id"])
+	var user models.User
+	db.DB.First(&user, params["id"])
 	json.NewEncoder(w).Encode(&user)
 }
 
-// create new user
+// CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
-	var user User
+	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
-	fmt.Println(&user)
-	db.Create(&user)
+	db.DB.Create(&user)
 	json.NewEncoder(w).Encode(&user)
 }

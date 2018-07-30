@@ -13,6 +13,7 @@ import (
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []models.User
 	db.DB.Find(&users)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&users)
 }
 
@@ -45,6 +46,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	profile.Username = u.Username
 	profile.Owned = buildingsArr
 
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&profile)
 }
 
@@ -53,5 +55,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
 	db.DB.Set("gorm:association_autoupdate", false).Create(&user)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }

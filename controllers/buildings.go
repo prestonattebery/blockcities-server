@@ -13,6 +13,7 @@ import (
 func GetBuildings(w http.ResponseWriter, r *http.Request) {
 	var buildings []models.Building
 	db.DB.Find(&buildings)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&buildings)
 }
 
@@ -21,6 +22,7 @@ func GetBuilding(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var building models.Building
 	db.DB.First(&building, params["id"])
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&building)
 }
 
@@ -29,5 +31,6 @@ func CreateBuilding(w http.ResponseWriter, r *http.Request) {
 	var building models.Building
 	json.NewDecoder(r.Body).Decode(&building)
 	db.DB.Create(&building)
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&building)
 }

@@ -19,15 +19,39 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 // GetUser gets a user by id
 func GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	var user models.User
-	db.DB.First(&user, params["id"])
-	json.NewEncoder(w).Encode(&user)
+
+	var buildingsArr []models.BuildingInfo
+	var bu models.BuildingInfo
+	var profile models.Profile
+
+	rows, _ := db.DB.Raw(`
+		SELECT building_id, title, address
+		FROM user_buildings 
+		INNER JOIN buildings ON user_buildings.building_id = buildings.id 
+		INNER JOIN users on users.id = user_buildings.user_id WHERE user_id = ?;
+		`, params["id"]).Rows()
+
+	defer rows.Close()
+
+	for rows.Next() {
+		db.DB.ScanRows(rows, &bu)
+		buildingsArr = append(buildingsArr, bu)
+	}
+
+	var u models.User
+	db.DB.First(&u, params["id"])
+
+	profile.Name = u.Name
+	profile.Username = u.Username
+	profile.Owned = buildingsArr
+
+	json.NewEncoder(w).Encode(&profile)
 }
 
 // CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
-	db.DB.Create(&user)
+	db.DB.Set("gorm:association_autoupdate", false).Create(&user)
 	json.NewEncoder(w).Encode(&user)
 }

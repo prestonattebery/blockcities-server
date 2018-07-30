@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/devinroche/blockcities-server/db"
@@ -12,7 +14,13 @@ import (
 // GetUsers gets all users
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	var users []models.User
-	db.DB.Find(&users)
+
+	if err := db.DB.Find(&users).Error; err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&users)
 }
@@ -24,13 +32,20 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	var buildingsArr []models.BuildingInfo
 	var bu models.BuildingInfo
 	var profile models.Profile
+	var u models.User
 
-	rows, _ := db.DB.Raw(`
+	rows, err := db.DB.Raw(`
 		SELECT building_id, title, address
 		FROM user_buildings 
 		INNER JOIN buildings ON user_buildings.building_id = buildings.id 
 		INNER JOIN users on users.id = user_buildings.user_id WHERE user_id = ?;
 		`, params["id"]).Rows()
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+		return
+	}
 
 	defer rows.Close()
 
@@ -39,8 +54,12 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		buildingsArr = append(buildingsArr, bu)
 	}
 
-	var u models.User
-	db.DB.First(&u, params["id"])
+	if err := db.DB.First(&u, params["id"]).Error; err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+		return
+	}
+	fmt.Println(u)
 
 	profile.Name = u.Name
 	profile.Username = u.Username
@@ -54,7 +73,11 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
-	db.DB.Set("gorm:association_autoupdate", false).Create(&user)
+	if err := db.DB.Set("gorm:association_autoupdate", false).Create(&user).Error; err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }

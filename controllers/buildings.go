@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/devinroche/blockcities-server/db"
@@ -12,7 +13,11 @@ import (
 // GetBuildings gets all buildings
 func GetBuildings(w http.ResponseWriter, r *http.Request) {
 	var buildings []models.Building
-	db.DB.Find(&buildings)
+	if err := db.DB.Find(&buildings); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&buildings)
 }
@@ -21,7 +26,13 @@ func GetBuildings(w http.ResponseWriter, r *http.Request) {
 func GetBuilding(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var building models.Building
-	db.DB.First(&building, params["id"])
+
+	if err := db.DB.First(&building, params["id"]); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&building)
 }
@@ -30,7 +41,12 @@ func GetBuilding(w http.ResponseWriter, r *http.Request) {
 func CreateBuilding(w http.ResponseWriter, r *http.Request) {
 	var building models.Building
 	json.NewDecoder(r.Body).Decode(&building)
-	db.DB.Create(&building)
+
+	if err := db.DB.Create(&building); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Panic(err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&building)
 }

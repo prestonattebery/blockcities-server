@@ -178,7 +178,7 @@ axios.post(url, {
         "CreatedAt": "2018-07-30T10:12:33.025933-07:00",
         "UpdatedAt": "2018-07-30T10:12:33.025933-07:00",
         "DeletedAt": null,
-        "Title": "BIG AZZ BUILDING",
+        "Title": "BIG BUILDING",
         "Address": "0x32be343b94f860124dc4fee278fdcbd38c102d88"
     }
     ...

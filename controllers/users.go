@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -59,7 +58,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 		return
 	}
-	fmt.Println(u)
 
 	profile.Name = u.Name
 	profile.Username = u.Username

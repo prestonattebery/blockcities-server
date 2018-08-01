@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -59,7 +60,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile.Name = u.Name
+	profile.Name = u.FirstName
 	profile.Username = u.Username
 	profile.Owned = buildingsArr
 
@@ -78,4 +79,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
+}
+
+func OwnBuilding(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	fmt.Println(params)
+	db.DB.Exec(`
+		INSERT INTO user_buildings (user_id, building_id)
+		VALUES (?, ?)`, params["u_id"], params["b_id"])
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w)
 }

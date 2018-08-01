@@ -20,6 +20,7 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 
+	r.HandleFunc("/users/{u_id}/building/{b_id}", OwnBuilding).Methods("POST")
 	r.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	r.HandleFunc("/users", GetUsers).Methods("GET")
 	r.HandleFunc("/users", CreateUser).Methods("POST")

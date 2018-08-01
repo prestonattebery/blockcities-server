@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -83,7 +82,6 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 
 func OwnBuilding(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	fmt.Println(params)
 	db.DB.Exec(`
 		INSERT INTO user_buildings (user_id, building_id)
 		VALUES (?, ?)`, params["u_id"], params["b_id"])

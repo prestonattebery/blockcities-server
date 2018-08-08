@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"fmt"
 
 	"github.com/devinroche/blockcities-server/db"
 	"github.com/devinroche/blockcities-server/models"
@@ -59,7 +60,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	profile.Name = u.FirstName
+	profile.Name = u.Name
 	profile.Username = u.Username
 	profile.Owned = buildingsArr
 
@@ -70,6 +71,7 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
+	fmt.Println(r.Body)
 	json.NewDecoder(r.Body).Decode(&user)
 	if err := db.DB.Set("gorm:association_autoupdate", false).Create(&user).Error; err != nil {
 		w.WriteHeader(http.StatusBadRequest)

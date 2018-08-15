@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
 
 	"github.com/devinroche/blockcities-server/db"
 	"github.com/devinroche/blockcities-server/models"
@@ -71,13 +71,31 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 // CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
-	fmt.Println(r.Body)
 	json.NewDecoder(r.Body).Decode(&user)
 	if err := db.DB.Set("gorm:association_autoupdate", false).Create(&user).Error; err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Panic(err)
 		return
 	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&user)
+}
+
+// LoginUser logs user in given username and password
+func LoginUser(w http.ResponseWriter, r *http.Request) {
+	var login models.Login
+	var user models.User
+
+	json.NewDecoder(r.Body).Decode(&login)
+
+	db.DB.Raw(`
+		SELECT *
+		FROM users
+		WHERE username = ?
+		AND password = ?;
+		`, login.Username, login.Password).Scan(&user)
+
+	fmt.Println(user)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }

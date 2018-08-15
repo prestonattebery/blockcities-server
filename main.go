@@ -29,6 +29,7 @@ func main() {
 	r.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	r.HandleFunc("/users", GetUsers).Methods("GET")
 	r.HandleFunc("/users", CreateUser).Methods("POST")
+	r.HandleFunc("/signin", LoginUser).Methods("POST")
 
 	r.HandleFunc("/buildings/{id}", GetBuilding).Methods("GET")
 	r.HandleFunc("/buildings", GetBuildings).Methods("GET")

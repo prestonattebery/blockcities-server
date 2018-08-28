@@ -13,11 +13,13 @@ import (
 // GetBuildings gets all buildings
 func GetBuildings(w http.ResponseWriter, r *http.Request) {
 	var buildings []models.Building
-	if err := db.DB.Find(&buildings); err != nil {
+
+	if err := db.DB.Find(&buildings).Error; err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		log.Panic(err)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&buildings)
 }

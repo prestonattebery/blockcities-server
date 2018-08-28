@@ -36,8 +36,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.DB.Raw(`
 		SELECT building_id, title, address
-		FROM user_buildings 
-		INNER JOIN buildings ON user_buildings.building_id = buildings.id 
+		FROM user_buildings
+		INNER JOIN buildings ON user_buildings.building_id = buildings.id
 		INNER JOIN users on users.id = user_buildings.user_id WHERE user_id = ?;
 		`, params["id"]).Rows()
 
@@ -68,13 +68,26 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&profile)
 }
 
+// UpdateUser updates a user given ID
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	var user models.User
+	fmt.Println(params["id"])
+	db.DB.First(&user, params["id"])
+
+	fmt.Println(&user)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&user)
+}
+
 // CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
 	if err := db.DB.Set("gorm:association_autoupdate", false).Create(&user).Error; err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Panic(err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
@@ -88,14 +101,13 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&login)
 
-	db.DB.Raw(`
-		SELECT *
-		FROM users
-		WHERE username = ?
-		AND password = ?;
-		`, login.Username, login.Password).Scan(&user)
+	db.DB.Where("username = ? AND password = ?", login.Username, login.Password).First(&user)
 
-	fmt.Println(user)
+	if db.DB.Where("username = ? AND password = ?", login.Username, login.Password).First(&user).RecordNotFound() {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }

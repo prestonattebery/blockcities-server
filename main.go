@@ -27,6 +27,7 @@ func main() {
 
 	r.HandleFunc("/users/{u_id}/building/{b_id}", OwnBuilding).Methods("POST")
 	r.HandleFunc("/users/{id}", GetUser).Methods("GET")
+	r.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
 	r.HandleFunc("/users", GetUsers).Methods("GET")
 	r.HandleFunc("/users", CreateUser).Methods("POST")
 	r.HandleFunc("/signin", LoginUser).Methods("POST")

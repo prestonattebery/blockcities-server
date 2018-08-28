@@ -36,8 +36,8 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.DB.Raw(`
 		SELECT building_id, title, address
-		FROM user_buildings 
-		INNER JOIN buildings ON user_buildings.building_id = buildings.id 
+		FROM user_buildings
+		INNER JOIN buildings ON user_buildings.building_id = buildings.id
 		INNER JOIN users on users.id = user_buildings.user_id WHERE user_id = ?;
 		`, params["id"]).Rows()
 
@@ -59,7 +59,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		log.Panic(err)
 		return
 	}
-	fmt.Println(u)
 
 	profile.Name = u.Name
 	profile.Username = u.Username
@@ -69,15 +68,56 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&profile)
 }
 
+// UpdateUser updates a user given ID
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	var user models.User
+	fmt.Println(params["id"])
+	db.DB.First(&user, params["id"])
+
+	fmt.Println(&user)
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&user)
+}
+
 // CreateUser creates a new user
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
 	if err := db.DB.Set("gorm:association_autoupdate", false).Create(&user).Error; err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Panic(err)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
+}
+
+// LoginUser logs user in given username and password
+func LoginUser(w http.ResponseWriter, r *http.Request) {
+	var login models.Login
+	var user models.User
+
+	json.NewDecoder(r.Body).Decode(&login)
+
+	db.DB.Where("username = ? AND password = ?", login.Username, login.Password).First(&user)
+
+	if db.DB.Where("username = ? AND password = ?", login.Username, login.Password).First(&user).RecordNotFound() {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&user)
+}
+
+func OwnBuilding(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	db.DB.Exec(`
+		INSERT INTO user_buildings (user_id, building_id)
+		VALUES (?, ?)`, params["u_id"], params["b_id"])
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w)
 }

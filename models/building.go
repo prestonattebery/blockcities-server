@@ -6,6 +6,10 @@ import "github.com/jinzhu/gorm"
 type Building struct {
 	gorm.Model
 
-	Title   string `gorm:"not null"`
-	Address string `gorm:"index"`
+	Name      string `gorm:"not null"`
+	Summary   string `gorm:"index"`
+	Built     string
+	Height    string
+	Architect string
+	ImageURL  string
 }

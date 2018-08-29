@@ -9,9 +9,11 @@ type Profile struct {
 
 // BuildingInfo basic struct for needed building information
 type BuildingInfo struct {
-	BuildingID  int
-	Title       string
-	Address     string
-	Description string
-	Image       string
+	BuildingID int
+	Name       string
+	Summary    string
+	Built      string
+	Height     string
+	Architect  string
+	ImageURL   string
 }

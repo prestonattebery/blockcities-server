@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -25,6 +26,11 @@ func main() {
 
 	r := mux.NewRouter()
 
+	port := os.Getenv("PORT") //Get port from .env file, we did not specify any port so this should return an empty string when tested locally
+	if port == "" {
+		port = "8080" //localhost
+	}
+
 	r.HandleFunc("/users/{u_id}/building/{b_id}", OwnBuilding).Methods("POST")
 	r.HandleFunc("/users/{id}", GetUser).Methods("GET")
 	r.HandleFunc("/users/{id}", UpdateUser).Methods("PUT")
@@ -36,7 +42,7 @@ func main() {
 	r.HandleFunc("/buildings", GetBuildings).Methods("GET")
 	r.HandleFunc("/buildings", CreateBuilding).Methods("POST")
 
-	if err := http.ListenAndServe("localhost:8080", handlers.CORS(allowedHeaders, allowedOrigins, allowedMethods)(r)); err != nil {
+	if err := http.ListenAndServe(":"+port, handlers.CORS(allowedHeaders, allowedOrigins, allowedMethods)(r)); err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()

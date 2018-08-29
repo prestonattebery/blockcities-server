@@ -6,9 +6,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/devinroche/blockcities-server/db"
 	"github.com/devinroche/blockcities-server/models"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // GetUsers gets all users
@@ -86,10 +89,15 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	var user models.User
 	json.NewDecoder(r.Body).Decode(&user)
+
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	user.Password = string(hashedPassword)
+
 	if err := db.DB.Set("gorm:association_autoupdate", false).Create(&user).Error; err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
 }
@@ -101,12 +109,25 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	json.NewDecoder(r.Body).Decode(&login)
 
-	db.DB.Where("username = ? AND password = ?", login.Username, login.Password).First(&user)
+	err := db.DB.Where("username = ?", login.Username).First(&user).Error
 
-	if db.DB.Where("username = ? AND password = ?", login.Username, login.Password).First(&user).RecordNotFound() {
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(login.Password))
+
+	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	user.Password = ""
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&user)
